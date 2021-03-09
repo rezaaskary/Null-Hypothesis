@@ -1,4 +1,32 @@
-def Regression(X,Y,alpha):        # both continuous t test for independent variables
+def Regression(X,Y,alpha):      
+    """
+    both continuous t test for independent variables
+
+    Parameters
+    ----------
+    X : TYPE
+        Input values.
+    Y : TYPE
+        Output values.
+    alpha : TYPE
+        P_value threshold
+
+    Returns
+    -------
+    t_stat : TYPE
+        t statistical test value.
+    df : TYPE
+        degree of freedom.
+    cv : TYPE
+        The critical value
+    P_val : TYPE
+        P value
+    R^2 : 
+            TYPE
+    R squared used for regression evaluation
+
+    """
+    
     import numpy as np
     from scipy import stats
     mean1, mean2 = np.mean(X), np.mean(Y)
@@ -27,7 +55,10 @@ def Regression(X,Y,alpha):        # both continuous t test for independent varia
 
     return t_stat, df, cv, P_val,R_2[0]**2
 ###############################################################################################
-def Students_T_test(X,Y,alpha):         # Students_T_test for dependent variables regression
+def Students_T_test(X,Y,alpha):         
+    """
+    Students_T_test for dependent variables regression
+    """
     import numpy as np
     from scipy import stats
     mean1, mean2 = np.mean(X), np.mean(Y)
@@ -52,11 +83,23 @@ def Students_T_test(X,Y,alpha):         # Students_T_test for dependent variable
 	# return everything
     return t_stat, df, cv, p
 ####################################################################
-def Chi_Square(     # for both categorical variables
-    xCat,           # input categorical feature
-    yCat,           # input categorical target variable
-    debug = 'N'     # debugging flag (Y/N) 
-    ):
+def Chi_Square(xCat,yCat,debug = 'N'):
+    """
+    Parameters
+    ----------
+    # for both categorical variables    xCat : TYPE
+        DESCRIPTION.
+    # input categorical feature    yCat : TYPE
+        DESCRIPTION.
+    # input categorical target variable    debug : TYPE, optional
+        DESCRIPTION. The default is 'N'     # debugging flag (Y/N).
+
+    Returns
+    chiSqStat, chiSqDf, chiSqSig,cramerV
+    None.
+
+    """
+     
     import pandas as pd
     import numpy as np
     import scipy
@@ -79,23 +122,32 @@ def Chi_Square(     # for both categorical variables
     return(chiSqStat, chiSqDf, chiSqSig,cramerV)
 ################################################################################################
 def DevianceTest (xInt,yCat,debug = 'N'):
+    """
     # input interval feature
     # input categorical target variable
-    # debugging flag (Y/N) 
-    # import sklearn
-    # from sklearn import metrics
-    # from sklearn.linear_model import LogisticRegression
+
+    Parameters
+    ----------
+    xInt : TYPE
+        DESCRIPTION.
+    yCat : TYPE
+        DESCRIPTION.
+    debug : TYPE, optional
+        DESCRIPTION. The default is 'N'.
+
+    Returns
+    -------
+    None.
+
+    """
+    
+    
     import pandas as pd
     import numpy as np
     import scipy
     import statsmodels.api as smodel
     #########################################################################
-    # New_y=np.zeros(yCat.shape)  
-    # New_y[yCat==2]=1
-    # New_y[yCat==3]=2
-    # New_y[yCat==5]=3
-    # del yCat
-    # yCat=New_y
+  
     #########################################################################    
     if type(yCat)==pd.core.frame.DataFrame:
         pass
@@ -128,18 +180,476 @@ def DevianceTest (xInt,yCat,debug = 'N'):
 
     return(devianceStat, devianceDf, devianceSig,mcFaddenRSq)
 ###########################################################################################
-def Anova_test(X,Y):        # one way anova test for categorical input and continuous output
+def Anova_test(X,Y): 
+    """
+           # one way anova test for categorical input and continuous output
+    Parameters
+    ----------
+    X : TYPE
+        input X.
+    Y : TYPE
+        Output Y
+
+    Returns
+    -------
+    F_value : TYPE
+        DESCRIPTION.
+    P_value : TYPE
+        DESCRIPTION.
+
+    """
     import scipy.stats as stats
     (F_value,P_value)=stats.f_oneway(X,Y)
     return (F_value,P_value)
 #################################################################################
+def SHAPIRO_Wilk(data,P_value_threshold):
+    """
+    #     Tests whether a data sample has a Gaussian distribution.
+    #     Assumptions
+    #     Observations in each sample are independent and identically distributed (iid).
+    # Interpretation
     
+    # H0: the sample has a Gaussian distribution.
+    # H1: the sample does not have a Gaussian distribution.
+    Reference: https://machinelearningmastery.com/statistical-hypothesis-tests-in-python-cheat-sheet/
+    """
+    from scipy.stats import shapiro
+    stat, p = shapiro(data)
+    print('stat=%.3f, p=%.3f' % (stat, p))
+    if p > P_value_threshold:
+        print('Probably Gaussian')
+    else:
+	    print('Probably not Gaussian')
+    return stat,p
+###################################################################################    
+def D_Agostino_s_Ksquared_Test(data,P_value_threshold):
+    """
+    Tests whether a data sample has a Gaussian distribution.
+    Assumptions
+    Observations in each sample are independent and identically distributed (iid).
+    Interpretation
     
+    H0: the sample has a Gaussian distribution.
+    H1: the sample does not have a Gaussian distribution.
+    Reference: https://machinelearningmastery.com/statistical-hypothesis-tests-in-python-cheat-sheet/
+    Returns
+    -------
+    None.
+
+    """
+    from scipy.stats import normaltest
+    stat, p = normaltest(data)
+    print('stat=%.3f, p=%.3f' % (stat, p))
+    if p > P_value_threshold:
+    	print('Probably Gaussian')
+    else:
+	    print('Probably not Gaussian')
+    return stat,p
+#######################################################################
+def Anderson_Darling_Test(data,P_value_threshold):
+    """
+    Tests whether a data sample has a Gaussian distribution.
+
+    Assumptions
     
+    Observations in each sample are independent and identically distributed (iid).
+    Interpretation
     
+    H0: the sample has a Gaussian distribution.
+    H1: the sample does not have a Gaussian distribution.
+
+    Parameters
+    ----------
+    data : TYPE
+        DESCRIPTION.
+    P_value_threshold : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+
+    """
     
+    from scipy.stats import anderson
+    result = anderson(data)
+    print('stat=%.3f' % (result.statistic))
+    for i in range(len(result.critical_values)):
+         sl,cv = result.significance_level[i], result.critical_values[i]
+         if result.statistic < cv:
+             print('Probably Gaussian at the %.1f%% level' % (sl))
+         else:
+             print('Probably not Gaussian at the %.1f%% level' % (sl))
+#####################################################################################
+def Spearmans_Rank_Correlation(data_1,data_2,P_value_threshold):
+    """
+    Tests whether two samples have a monotonic relationship.
+
+    Assumptions
     
+    Observations in each sample are independent and identically distributed (iid).
+    Observations in each sample can be ranked.
+    Interpretation
     
+    H0: the two samples are independent.
+    H1: there is a dependency between the samples.
+    Ref: https://machinelearningmastery.com/statistical-hypothesis-tests-in-python-cheat-sheet/
+
+    Returns
+    -------
+    None.
+
+    """
+    from scipy.stats import spearmanr
+    stat, p = spearmanr(data_1, data_2)
+    print('stat=%.3f, p=%.3f' % (stat, p))
+    if p > P_value_threshold:
+    	print('Probably independent')
+    else:
+    	print('Probably dependent')
+    return stat, p
+############################################################################
+def Kendalls_Rank_Correlation(data_1,data_2,P_value_threshold):
+    """
+    Tests whether two samples have a monotonic relationship.
+
+    Assumptions
     
+    Observations in each sample are independent and identically distributed (iid).
+    Observations in each sample can be ranked.
+    Interpretation
     
+    H0: the two samples are independent.
+    H1: there is a dependency between the samples.
+    Ref: https://machinelearningmastery.com/statistical-hypothesis-tests-in-python-cheat-sheet/
+        Returns
+        -------
+        None.
+
+    """
+    from scipy.stats import kendalltau
+    stat, p = kendalltau(data_1, data_2)
+    print('stat=%.3f, p=%.3f' % (stat, p))
+    if p > P_value_threshold:
+    	print('Probably independent')
+    else:
+    	print('Probably dependent')
+    return  stat, p 
+##############################################################################
+def Chi_Squared_Test(data,P_value_threshold):
+    """
+    Tests whether two categorical variables are related or independent.
+
+    Assumptions
     
+    Observations used in the calculation of the contingency table are independent.
+    25 or more examples in each cell of the contingency table.
+    Interpretation
+    
+    H0: the two samples are independent.
+    H1: there is a dependency between the samples.
+
+    Parameters
+    ----------
+    data : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+
+    """
+    from scipy.stats import chi2_contingency
+
+    stat, p, dof, expected = chi2_contingency(data)
+    print('stat=%.3f, p=%.3f' % (stat, p))
+    if p > P_value_threshold:
+    	print('Probably independent')
+    else:
+    	print('Probably dependent')
+    return stat, p, dof, expected
+##############################################################################
+def Augmented_Dickey_Fuller_Unit_Root_Test(data,P_value_threshold):
+    """
+    Tests whether a time series has a unit root, e.g. has a trend or more generally is autoregressive.
+
+    Assumptions
+    
+    Observations in are temporally ordered.
+    Interpretation
+    
+    H0: a unit root is present (series is non-stationary).
+    H1: a unit root is not present (series is stationary).
+
+    Parameters
+    ----------
+    data : TYPE
+        DESCRIPTION.
+    P_value_threshold : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+
+    """
+    from statsmodels.tsa.stattools import adfuller
+    stat, p, lags, obs, crit, t = adfuller(data)
+    print('stat=%.3f, p=%.3f' % (stat, p))
+    if p > P_value_threshold:
+    	print('Probably not Stationary')
+    else:
+    	print('Probably Stationary')
+    return stat, p, lags, obs, crit, t
+################################################################################
+def Kwiatkowski_Phillips_Schmidt_Shin(data,P_value_threshold):
+    """
+    Tests whether a time series is trend stationary or not.
+
+    Assumptions
+    
+    Observations in are temporally ordered.
+    Interpretation
+    
+    H0: the time series is not trend-stationary.
+    H1: the time series is trend-stationary.
+    
+
+    Parameters
+    ----------
+    data : TYPE
+        DESCRIPTION.
+    P_value_threshold : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+
+    """
+    from statsmodels.tsa.stattools import kpss
+    stat, p, lags, crit = kpss(data)
+    print('stat=%.3f, p=%.3f' % (stat, p))
+    if p > P_value_threshold:
+    	print('Probably not Stationary')
+    else:
+    	print('Probably Stationary')
+    return stat, p, lags, crit
+###################################################################
+def Paired_independent_student_t_test(data_1,data_2,P_value_threshold,mode):
+    """
+    Tests whether the means of two independent samples are significantly different.
+    Assumptions
+
+    Observations in each sample are independent and identically distributed (iid).
+    Observations in each sample are normally distributed.
+    Observations in each sample have the same variance.
+    Interpretation
+    
+    H0: the means of the samples are equal.
+    H1: the means of the samples are unequal.
+    
+    ############################################################    
+    Tests whether the means of two paired samples are significantly different.
+    
+    Assumptions
+    
+    Observations in each sample are independent and identically distributed (iid).
+    Observations in each sample are normally distributed.
+    Observations in each sample have the same variance.
+    Observations across each sample are paired.
+    Interpretation
+    
+    H0: the means of the samples are equal.
+    H1: the means of the samples are unequal.
+
+
+
+
+
+    Parameters
+    ----------
+    data : TYPE
+        DESCRIPTION.
+    P_value_threshold : TYPE
+        DESCRIPTION.
+    mode : "independent" or "dependent"
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+
+    """
+    if mode=="independent":
+        from scipy.stats import ttest_ind
+        stat, p = ttest_ind(data_1,data_2)
+        print('stat=%.3f, p=%.3f' % (stat, p))
+        if p > P_value_threshold:
+        	print('Probably the same distribution')
+        else:
+        	print('Probably different distributions')
+        return stat, p
+    elif mode=="dependent":
+        from scipy.stats import ttest_rel
+
+        stat, p = ttest_rel(data_1,data_2)
+        print('stat=%.3f, p=%.3f' % (stat, p))
+        if p >P_value_threshold:
+        	print('Probably the same distribution')
+        else:
+        	print('Probably different distributions')
+        return stat, p
+##################################################################################
+def Mann_Whitney_U_Test(data_1,data_2,P_value_threshold):
+    """
+    Tests whether the distributions of two independent samples are equal or not.
+
+    Assumptions
+    
+    Observations in each sample are independent and identically distributed (iid).
+    Observations in each sample can be ranked.
+    Interpretation
+    
+    H0: the distributions of both samples are equal.
+    H1: the distributions of both samples are not equal.
+    
+
+    Parameters
+    ----------
+    data_1 : TYPE
+        DESCRIPTION.
+    data_2 : TYPE
+        DESCRIPTION.
+    P_value_threshold : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+
+    """
+    from scipy.stats import mannwhitneyu
+    stat, p = mannwhitneyu(data_1,data_2)
+    print('stat=%.3f, p=%.3f' % (stat, p))
+    if p > P_value_threshold:
+    	print('Probably the same distribution')
+    else:
+    	print('Probably different distributions')
+    return stat, p
+##################################################################################
+def Wilcoxon_Signed_Rank_Test(data_1,data_2,P_value_threshold):
+    """
+    Tests whether the distributions of two paired samples are equal or not.
+
+    Assumptions
+    
+    Observations in each sample are independent and identically distributed (iid).
+    Observations in each sample can be ranked.
+    Observations across each sample are paired.
+    Interpretation
+    
+    H0: the distributions of both samples are equal.
+    H1: the distributions of both samples are not equal.
+
+    Parameters
+    ----------
+    data_1 : TYPE
+        DESCRIPTION.
+    data_2 : TYPE
+        DESCRIPTION.
+    P_value_threshold : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+
+    """
+    from scipy.stats import wilcoxon
+
+    stat, p = wilcoxon(data_1,data_2)
+    print('stat=%.3f, p=%.3f' % (stat, p))
+    if p > P_value_threshold:
+    	print('Probably the same distribution')
+    else:
+    	print('Probably different distributions')
+    return stat, p
+##################################################################################   
+def Kruskal_Wallis_H_Test(data_1,data_2,P_value_threshold):
+    """
+    Tests whether the distributions of two paired samples are equal or not.
+
+    Assumptions
+    
+    Observations in each sample are independent and identically distributed (iid).
+    Observations in each sample can be ranked.
+    Observations across each sample are paired.
+    Interpretation
+    
+    H0: the distributions of both samples are equal.
+    H1: the distributions of both samples are not equal.
+
+    Parameters
+    ----------
+    data_1 : TYPE
+        DESCRIPTION.
+    data_2 : TYPE
+        DESCRIPTION.
+    P_value_threshold : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+
+    """
+    from scipy.stats import kruskal
+    stat, p = kruskal(data_1,data_2)
+    print('stat=%.3f, p=%.3f' % (stat, p))
+    if p > P_value_threshold:
+    	print('Probably the same distribution')
+    else:
+    	print('Probably different distributions')
+    return stat, p
+##################################################################################
+def Friedman_Test(data,P_value_threshold):
+    """
+    Tests whether the distributions of two or more paired samples are equal or not.
+
+    Assumptions
+    
+    Observations in each sample are independent and identically distributed (iid).
+    Observations in each sample can be ranked.
+    Observations across each sample are paired.
+    Interpretation
+    
+    H0: the distributions of all samples are equal.
+    H1: the distributions of one or more samples are not equal
+
+    Parameters
+    ----------
+    data : TYPE
+        DESCRIPTION.
+    P_value_threshold : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+
+    """
+    
+        
+    
+    from scipy.stats import friedmanchisquare
+
+    stat, p = friedmanchisquare(data[:,0],data[:,1])
+    print('stat=%.3f, p=%.3f' % (stat, p))
+    if p > P_value_threshold:
+    	print('Probably the same distribution')
+    else:
+    	print('Probably different distributions')
+    return stat, p
+#####################################################################################
+        
